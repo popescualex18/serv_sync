@@ -1,1 +1,10 @@
-{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"meal-app-ngt","configurations":{"web":"1:912044780067:web:4b161c4d7390d373cadf96","windows":"1:912044780067:web:2590f570ee459aaecadf96"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

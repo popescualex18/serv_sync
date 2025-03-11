@@ -6,8 +6,7 @@ import 'package:serv_sync/domain/entities/menu/menu_item_model.dart';
 import 'package:serv_sync/main.dart';
 import 'package:serv_sync/ui/navigation/app_router.dart';
 import 'package:serv_sync/ui/shared/widgets/base_widget.dart';
-import 'package:serv_sync/ui/shared/widgets/table/custom_table.dart';
-import 'package:serv_sync/ui/shared/widgets/table/models/custom_table_setting.dart';
+import 'package:serv_sync/ui/shared/widgets/card/details_card.dart';
 import 'package:serv_sync/ui/state_management/cubits/menu/menu_cubit.dart';
 
 class MenuPage extends StatefulWidget {
@@ -32,35 +31,43 @@ class _MenuPageState extends State<MenuPage> {
 
   Widget buildChild(BuildContext context) {
     var menus =
-    context.select<MenuCubit, List<MenuItem>>((cubit) => cubit.state);
+        context.select<MenuCubit, List<MenuItem>>((cubit) => cubit.state);
+
     return Column(
       children: [
+        // 🔹 Action Bar
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: () => AppRouter.router.go("/menu/manage"),
+                icon: Icon(Icons.add_rounded, size: 22),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: Text("Adauga"),
+                label: Text(
+                  "Adaugă",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
-              SizedBox(width: 30),
+              SizedBox(width: 16),
               Expanded(
                 child: AnimatedSearchBar(
                   searchDecoration: InputDecoration(
-                    labelText: 'Cauta meniu',
-                    alignLabelWithHint: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    labelText: 'Caută meniu',
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                     ),
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
                   ),
-                  label: "Cauta meniu",
+                  label: "Caută meniu",
                   onChanged: locator.get<MenuCubit>().filterMenus,
                   onClose: locator.get<MenuCubit>().clearFilter,
                 ),
@@ -68,49 +75,58 @@ class _MenuPageState extends State<MenuPage> {
             ],
           ),
         ),
+
+        // 🔹 Menu List/Grid
         Expanded(
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 4,
-            margin: EdgeInsets.all(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: CustomTable(
-                editRoute: "/menu/manage",
-                onDelete: locator.get<MenuCubit>().delete,
-                data: menus,
-                columns: [
-                  CustomTableSetting<MenuItem>(
-                    columnName: "Nume",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    rowValueSelector: (item) => item.name,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              if (menus.isEmpty) {
+                return Center(
+                  child: Text(
+                    "Nu există meniuri disponibile",
+                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                   ),
-                  CustomTableSetting<MenuItem>(
-                    width: 100,
-                    columnName: "Pret",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    rowValueSelector: (item) => item.price.toString(),
-                  ),
-                  CustomTableSetting<MenuItem>(
-                    width: 70,
-                    columnName: "Paine",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    rowValueSelector: (item) => item.hasBread ? "Da" : "Nu",
-                  ),
-                  CustomTableSetting<MenuItem>(
-                    width: 70,
-                    columnName: "Mamaliga",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    rowValueSelector: (item) => item.hasPolenta ? "Da" : "Nu",
-                  ),
-                ],
-              ),
-            ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: ListView.builder(
+                  itemCount: menus.length,
+                  itemBuilder: (context, index) {
+                    return DetailsCard(
+                      item: menus[index],
+                      actionButton: _actionButton(menus[index]),
+                      onEditClosed: locator.get<MenuCubit>().loadMenus,
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _actionButton(MenuItem item) {
+    return PopupMenuButton<String>(
+      onSelected: (value) {
+        if (value == "edit") {
+          AppRouter.router.push("/menu/manage/${item.id}");
+        } else if (value == "delete") {
+          locator.get<MenuCubit>().delete(item.id!);
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(value: "edit", child: Text("Editează")),
+        PopupMenuItem(
+            value: "delete",
+            child: Text("Șterge", style: TextStyle(color: Colors.red))),
+      ],
+      icon: Icon(Icons.more_vert_rounded,
+          size: 18, color: Colors.grey), // Smaller menu icon
+      padding: EdgeInsets.zero, // Remove extra padding
     );
   }
 

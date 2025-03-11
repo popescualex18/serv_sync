@@ -130,7 +130,21 @@ class _ManageMenuPageState extends State<ManageMenuPage> {
               onPressed: () {
                 if (_globalKey.currentState!.validate()) {
                   _globalKey.currentState!.save();
-                  _cubit.save();
+                  _cubit.save().then((_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      snackBarAnimationStyle: AnimationStyle(
+                        duration: Duration(
+                          milliseconds: 30,
+                        ),
+                        reverseDuration: Duration(
+                          milliseconds: 30,
+                        ),
+                      ),
+                      SnackBar(
+                        content: Text("Meniul a fost salvat cu success"),
+                      ),
+                    );
+                  });
                 }
               },
             ),
@@ -165,25 +179,6 @@ class _ManageMenuPageState extends State<ManageMenuPage> {
             border: InputBorder.none,
           ),
           validator: validator,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return Align(
-      alignment: Alignment.center,
-      child: ElevatedButton.icon(
-        onPressed: () {},
-        icon: const Icon(Icons.save, size: 20),
-        label: const Text("Save"),
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 3,
         ),
       ),
     );

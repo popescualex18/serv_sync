@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:serv_sync/main.dart';
@@ -14,10 +14,7 @@ import 'package:serv_sync/ui/state_management/states/app_state.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget child;
-  const MainLayout({
-    super.key,
-    required this.child,
-  });
+  const MainLayout({super.key, required this.child});
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
@@ -26,23 +23,17 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   late final AppCubit _cubit;
   late final StreamSubscription<AppState> _listener;
+
   @override
   void initState() {
+    super.initState();
     _cubit = context.read<AppCubit>();
     _listener = _cubit.stream.listen(_onStateChanged);
-    super.initState();
-    locator.register(
-      MenuCubit(_cubit),
-    );
-    locator.register(
-      ManageMenuCubit(_cubit),
-    );
-    locator.register(
-      DailyMenuCubit(_cubit),
-    );
-    locator.register(
-      DailyMenuOverviewCubit(_cubit),
-    );
+
+    locator.register(MenuCubit(_cubit));
+    locator.register(ManageMenuCubit(_cubit));
+    locator.register(DailyMenuCubit(_cubit));
+    locator.register(DailyMenuOverviewCubit(_cubit));
   }
 
   @override
@@ -54,10 +45,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   void _onStateChanged(AppState state) {
     if (state.error != null) {
-      SnackbarProvider.error(
-        context,
-        state.error.toString(),
-      );
+      SnackbarProvider.error(context, state.error.toString());
     }
   }
 
@@ -65,20 +53,27 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<MenuCubit>(
-          create: (BuildContext context) => locator.get<MenuCubit>(),
-        ),
-        BlocProvider<ManageMenuCubit>(
-          create: (BuildContext context) => locator.get<ManageMenuCubit>(),
-        ),
-        BlocProvider<DailyMenuCubit>(
-          create: (BuildContext context) => locator.get<DailyMenuCubit>(),
-        ),
+        BlocProvider<MenuCubit>(create: (context) => locator.get<MenuCubit>()),
+        BlocProvider<ManageMenuCubit>(create: (context) => locator.get<ManageMenuCubit>()),
+        BlocProvider<DailyMenuCubit>(create: (context) => locator.get<DailyMenuCubit>()),
       ],
       child: Scaffold(
+        drawer: kIsWeb ? Sidebar() : null, // Drawer only for Web
+        appBar: kIsWeb
+            ? AppBar(
+          title: Text("ServSync"),
+          backgroundColor: Colors.blueAccent,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
+        )
+            : null, // No AppBar on desktop or mobile
         body: Row(
           children: [
-            Sidebar(),
+            if (!kIsWeb) Sidebar(), // Sidebar for Desktop & Mobile
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),

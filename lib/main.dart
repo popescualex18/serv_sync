@@ -8,6 +8,7 @@ import 'package:serv_sync/core/constants/constants.dart';
 import 'package:serv_sync/core/logging/logger.dart';
 import 'package:serv_sync/core/utils/cubit_locator.dart';
 import 'package:serv_sync/ui/navigation/app_router.dart';
+import 'package:serv_sync/ui/shared/theme.dart';
 import 'package:serv_sync/ui/state_management/cubits/app_cubit.dart';
 import 'package:serv_sync/ui/state_management/cubits/daily_menu_overview_cubit/daily_menu_overview_cubit.dart';
 import 'package:serv_sync/ui/state_management/cubits/side_bar/sidebar_cubit.dart';
@@ -67,6 +68,9 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
         routerConfig: router,
       ),

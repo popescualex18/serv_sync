@@ -63,6 +63,7 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
       },
       Future(
         () async {
+
           var allMenus = await _menuDataAccess.fetchMenus();
           menus.addAll(allMenus);
           var selectedDailyDefinitions =
@@ -81,6 +82,7 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
   }
 
   void reset() {
+    menus.clear();
     emit(DailyMenuState.initial());
     categoryIndex = 0;
     dailyDefinitions = {

@@ -1,14 +1,13 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:cross_scroll/cross_scroll.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-
 import 'package:serv_sync/domain/entities/menu/menu_item_model.dart';
 import 'package:serv_sync/main.dart';
 import 'package:serv_sync/ui/state_management/cubits/daily_menu_overview_cubit/daily_menu_overview_cubit.dart';
+import 'utils/file_saver_desktop.dart'
+    if (dart.library.html) 'utils/file_saver_web.dart';
 
 class DailyMenuOverviewPage extends StatefulWidget {
   const DailyMenuOverviewPage({super.key});
@@ -28,21 +27,21 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
   );
 
   final _menuCategoryStyle = TextStyle(
-    fontSize: 26,
+    fontSize: 35,
     fontWeight: FontWeight.w600,
     color: Colors.brown[700],
     fontFamily: 'Serif',
   );
 
   final _itemStyle = TextStyle(
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: FontWeight.w400,
     color: Colors.black87,
     fontFamily: 'Serif',
   );
 
   final _priceStyle = TextStyle(
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: FontWeight.w700,
     color: Colors.brown[800],
     fontFamily: 'Serif',
@@ -59,17 +58,13 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
       final Uint8List pngBytes =
           await _convertToPngWithBackground(image, Colors.white);
 
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/menu_screenshot.png';
-      final File imgFile = File(filePath);
-      await imgFile.writeAsBytes(pngBytes);
-
+      saveImage(pngBytes, "menu_screenshot.png");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Menu exported successfully! Path: $filePath")),
+        SnackBar(content: Text("Menu exported successfully!")),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to export menu!")),
+        SnackBar(content: Text(e.toString())),
       );
     }
   }
@@ -124,22 +119,23 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
           }
           final menuItems = locator.get<DailyMenuOverviewCubit>().state;
           if (menuItems.isEmpty) {
-            return Center(child: Text("No Menu Items Available"));
+            return Center(child: Text("Nu exista meniuri"));
           }
 
           return CrossScroll(
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: 2500,
-                minHeight: MediaQuery.of(context).size.height, // Ensures scrolling
+                minWidth: 2300,
+                minHeight:
+                    MediaQuery.of(context).size.height, // Ensures scrolling
               ),
               child: Center(
                 child: SizedBox(
-                  width: 2500,
+                  width: 2300,
                   child: RepaintBoundary(
                     key: _exportKey,
                     child: Container(
-                      width: 2500,
+                      width: 2300,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         border: Border.all(color: Colors.brown[800]!, width: 3),
@@ -157,7 +153,8 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
     );
   }
 
-  Widget _menuOverviewWidget(double screenHeight, Map<int,List<MenuItem>> menuItems) {
+  Widget _menuOverviewWidget(
+      double screenHeight, Map<int, List<MenuItem>> menuItems) {
     final double availableHeight = screenHeight * 0.85;
     var date = DateTime.now();
     return Padding(
@@ -184,12 +181,12 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
               Expanded(
                 child: Column(
                   children: [
-                    buildBorderedCategory("Ciorbe / Supe",
-                        menuItems[2]!, availableHeight * 0.23),
-                    buildBorderedCategory("Salate",
-                        menuItems[4]!, availableHeight * 0.55),
-                    buildBorderedCategory("Diverse",
-                        menuItems[6]!, availableHeight * 0.26),
+                    buildBorderedCategory(
+                        "Ciorbe / Supe", menuItems[2]!, availableHeight * 0.23),
+                    buildBorderedCategory(
+                        "Salate", menuItems[4]!, availableHeight * 0.55),
+                    buildBorderedCategory(
+                        "Diverse", menuItems[6]!, availableHeight * 0.26),
                   ],
                 ),
               ),
@@ -202,18 +199,18 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
                       availableHeight * 0.3,
                       isDailyMenu: true,
                     ),
-                    buildBorderedCategory("Meniuri La Alegere",
-                        menuItems[1]!, availableHeight * 0.75),
+                    buildBorderedCategory("Meniuri La Alegere", menuItems[1]!,
+                        availableHeight * 0.75),
                   ],
                 ),
               ),
               Expanded(
                 child: Column(
                   children: [
-                    buildBorderedCategory("Carne",
-                        menuItems[5]!, availableHeight * 0.5),
-                    buildBorderedCategory("Garnituri",
-                        menuItems[3]!, availableHeight * 0.5),
+                    buildBorderedCategory(
+                        "Carne", menuItems[5]!, availableHeight * 0.5),
+                    buildBorderedCategory(
+                        "Garnituri", menuItems[3]!, availableHeight * 0.5),
                   ],
                 ),
               ),
@@ -281,9 +278,14 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
             child: ListView.builder(
               itemCount: items.length,
               itemBuilder: (context, index) {
-                final isInDailyMenu = locator.get<DailyMenuOverviewCubit>().state[0]!.any((item) => item.id! == items[index].id);
+                final isInDailyMenu = locator
+                    .get<DailyMenuOverviewCubit>()
+                    .state[0]!
+                    .any((item) => item.id! == items[index].id);
                 return ListTile(
-                  title: Text(_capitalizeFirstLetter(items[index].name, isInDailyMenu, items[index].hasBread, items[index].hasPolenta),
+                  title: Text(
+                      _capitalizeFirstLetter(items[index].name, isInDailyMenu,
+                          items[index].hasBread, items[index].hasPolenta),
                       style: _itemStyle),
                   trailing:
                       Text("${items[index].price} LEI", style: _priceStyle),
@@ -306,7 +308,10 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
               style: _menuCategoryStyle, textAlign: TextAlign.center),
           Divider(color: Colors.brown[700]),
           Expanded(
-            child: ListView.builder(
+            child: ListView.separated(
+              separatorBuilder: (_, __) => SizedBox(
+                height: 10,
+              ),
               itemCount: items.length,
               itemBuilder: (context, index) => Text(
                   _capitalizeFirstLetter(
@@ -324,13 +329,18 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
     );
   }
 
-  String _capitalizeFirstLetter(String text, bool isInDailyMenu, bool hasBread, bool hasPolenta,) {
+  String _capitalizeFirstLetter(
+    String text,
+    bool isInDailyMenu,
+    bool hasBread,
+    bool hasPolenta,
+  ) {
     if (text.isEmpty) return text;
-    if(isInDailyMenu){
-      if(hasBread) {
+    if (isInDailyMenu) {
+      if (hasBread) {
         return "${text[0].toUpperCase()}${text.substring(1)} si painica";
       }
-      if(hasPolenta) {
+      if (hasPolenta) {
         return "${text[0].toUpperCase()}${text.substring(1)} cu painica";
       }
     }
