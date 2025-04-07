@@ -10,7 +10,6 @@ import 'package:serv_sync/core/utils/cubit_locator.dart';
 import 'package:serv_sync/ui/navigation/app_router.dart';
 import 'package:serv_sync/ui/shared/theme.dart';
 import 'package:serv_sync/ui/state_management/cubits/app_cubit.dart';
-import 'package:serv_sync/ui/state_management/cubits/daily_menu_overview_cubit/daily_menu_overview_cubit.dart';
 import 'package:serv_sync/ui/state_management/cubits/side_bar/sidebar_cubit.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -20,6 +19,9 @@ import 'package:uuid/uuid.dart';
 var uuid = Uuid();
 final CubitLocator locator = CubitLocator();
 void main() async {
+  locator.register(
+    SidebarCubit(),
+  );
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
@@ -38,7 +40,7 @@ Future tryWindowsInitialize() async {
     return;
   }
   await windowManager.ensureInitialized();
-
+  windowManager.setTitle("La Neagtovo");
   windowManager.waitUntilReadyToShow().then((_) async {
     await windowManager.setMinimumSize(Constants.minWindowsSize);
     await windowManager.setSize(Constants.minWindowsSize);
@@ -57,9 +59,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<SidebarCubit>(
-          create: (BuildContext context) => locator.register(
-            SidebarCubit(),
-          ),
+          create: (BuildContext context) => locator.get<SidebarCubit>()
         ),
         BlocProvider<AppCubit>(
           create: (BuildContext context) => locator.register(
@@ -70,7 +70,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.light,
         debugShowCheckedModeBanner: false,
         routerConfig: router,
       ),

@@ -18,7 +18,9 @@ class DailyMenuOverviewPage extends StatefulWidget {
 
 class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
   final GlobalKey _exportKey = GlobalKey();
-
+  ValueNotifier<bool> exportInProgress = ValueNotifier<bool>(false);
+  late double minWidth = MediaQuery.of(context).size.width;
+  double exportWidth = 2300;
   final _titleStyle = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.bold,
@@ -34,14 +36,14 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
   );
 
   final _itemStyle = TextStyle(
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: FontWeight.w400,
     color: Colors.black87,
     fontFamily: 'Serif',
   );
 
   final _priceStyle = TextStyle(
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: FontWeight.w700,
     color: Colors.brown[800],
     fontFamily: 'Serif',
@@ -49,23 +51,28 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
 
   Future<void> _captureAndSaveMenu() async {
     try {
+      exportInProgress.value = true;
+
+      await Future.delayed(
+          Duration(milliseconds: 300)); // Give time for UI update
       RenderRepaintBoundary boundary = _exportKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;
 
-      ui.Image image = await boundary.toImage(pixelRatio: 1.0);
+      ui.Image image = await boundary.toImage(pixelRatio: 2.0);
 
       // Convert to PNG with a solid background color
       final Uint8List pngBytes =
           await _convertToPngWithBackground(image, Colors.white);
-
-      saveImage(pngBytes, "menu_screenshot.png");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Menu exported successfully!")),
-      );
+      var dateTimeNow = DateTime.now();
+      final fileName =
+          "Meniul zilei ${dateTimeNow.day}/${dateTimeNow.month}/${dateTimeNow.year}.png";
+      saveImage(pngBytes, fileName, context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
+    } finally {
+      exportInProgress.value = false;
     }
   }
 
@@ -88,11 +95,12 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    minWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.brown[50],
       appBar: AppBar(
         title: Text(
-          'Restaurant Menu',
+          'Meniul Zilei',
           style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
@@ -115,38 +123,97 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
+            return Center(
+              child: Text(
+                "Error: ${snapshot.error}",
+              ),
+            );
           }
           final menuItems = locator.get<DailyMenuOverviewCubit>().state;
           if (menuItems.isEmpty) {
-            return Center(child: Text("Nu exista meniuri"));
+            return Center(
+              child: Text("Nu exista meniuri,"),
+            );
           }
 
-          return CrossScroll(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: 2300,
-                minHeight:
-                    MediaQuery.of(context).size.height, // Ensures scrolling
-              ),
-              child: Center(
-                child: SizedBox(
-                  width: 2300,
-                  child: RepaintBoundary(
-                    key: _exportKey,
-                    child: Container(
-                      width: 2300,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.brown[800]!, width: 3),
+          return ValueListenableBuilder<bool>(
+            valueListenable: exportInProgress,
+            builder: (context, isExport, child) {
+              return Stack(
+                children: [
+                  Visibility(
+                    visible: exportInProgress.value,
+                    child: CrossScroll(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: exportWidth,
+                          minHeight: MediaQuery.of(context)
+                              .size
+                              .height, // Ensures scrolling
+                        ),
+                        child: Center(
+                          child: SizedBox(
+                            width: exportWidth,
+                            child: RepaintBoundary(
+                              key: _exportKey,
+                              child: Container(
+                                width: exportWidth,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(
+                                      color: Colors.brown[800]!, width: 3),
+                                ),
+                                margin: EdgeInsets.all(10),
+                                child: _menuOverviewWidget(1600, menuItems),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      margin: EdgeInsets.all(10),
-                      child: _menuOverviewWidget(1300, menuItems),
                     ),
                   ),
-                ),
-              ),
-            ),
+                  CrossScroll(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minWidth: minWidth,
+                        minHeight: MediaQuery.of(context)
+                            .size
+                            .height, // Ensures scrolling
+                      ),
+                      child: Center(
+                        child: SizedBox(
+                          width: minWidth,
+                          child: Container(
+                            width: minWidth,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                  color: Colors.brown[800]!, width: 3),
+                            ),
+                            margin: EdgeInsets.all(10),
+                            child: _menuOverviewWidget(1600, menuItems),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: isExport,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      color: Colors.grey.withValues(alpha: 0.9),
+                      child: Center(
+                        child: Text(
+                          "Se descarca...",
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
@@ -171,6 +238,7 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
             "${date.day}/${date.month}/${date.year}",
             style: _menuCategoryStyle.copyWith(fontSize: 22),
           ),
+
           Divider(thickness: 2, color: Colors.brown[900]),
           SizedBox(height: 10),
 
@@ -182,11 +250,14 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
                 child: Column(
                   children: [
                     buildBorderedCategory(
-                        "Ciorbe / Supe", menuItems[2]!, availableHeight * 0.23),
+                        "Ciorbe / Supe", menuItems[2]!, availableHeight * 0.23,
+                        icon: Icons.soup_kitchen),
                     buildBorderedCategory(
-                        "Salate", menuItems[4]!, availableHeight * 0.55),
+                        "Salate", menuItems[4]!, availableHeight * 0.55,
+                        icon: Icons.rice_bowl),
                     buildBorderedCategory(
-                        "Diverse", menuItems[6]!, availableHeight * 0.26),
+                        "Diverse", menuItems[6]!, availableHeight * 0.26,
+                        icon: Icons.bakery_dining),
                   ],
                 ),
               ),
@@ -196,11 +267,16 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
                     buildBorderedCategory(
                       "Meniul Zilei",
                       menuItems[0]!,
-                      availableHeight * 0.3,
+                      availableHeight * 0.2,
                       isDailyMenu: true,
                     ),
-                    buildBorderedCategory("Meniuri La Alegere", menuItems[1]!,
-                        availableHeight * 0.75),
+                    buildBorderedCategory(
+                      "Meniuri La Alegere",
+                      menuItems[1]!,
+                      availableHeight * 0.8,
+                      icon: Icons.remove,
+                      addLogo: true,
+                    ),
                   ],
                 ),
               ),
@@ -208,9 +284,11 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
                 child: Column(
                   children: [
                     buildBorderedCategory(
-                        "Carne", menuItems[5]!, availableHeight * 0.5),
+                        "Carne", menuItems[5]!, availableHeight * 0.5,
+                        icon: Icons.kebab_dining),
                     buildBorderedCategory(
-                        "Garnituri", menuItems[3]!, availableHeight * 0.5),
+                        "Garnituri", menuItems[3]!, availableHeight * 0.5,
+                        icon: Icons.remove),
                   ],
                 ),
               ),
@@ -239,7 +317,7 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
 
   Widget buildBorderedCategory(
       String categoryName, List<MenuItem> items, double height,
-      {bool isDailyMenu = false}) {
+      {bool isDailyMenu = false, IconData? icon, bool addLogo = false}) {
     return Container(
       margin: EdgeInsets.symmetric(
           vertical: 8, horizontal: 8), // Adjust spacing between sections
@@ -252,7 +330,7 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
         color: Colors.white, // Background color inside the border
         boxShadow: [
           BoxShadow(
-            color: Colors.brown[300]!.withOpacity(0.3),
+            color: Colors.brown[300]!.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 5,
             offset: Offset(2, 3), // Slight shadow for a lifted look
@@ -260,13 +338,19 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
         ],
       ),
       child: isDailyMenu
-          ? buildDailyMenuCategoryCard(categoryName, items, height)
-          : buildCategoryCard(categoryName, items, height),
+          ? buildDailyMenuCategoryCard(
+              categoryName,
+              items,
+              height,
+            )
+          : buildCategoryCard(categoryName, items, height, icon!,
+              addLogo: addLogo),
     );
   }
 
   Widget buildCategoryCard(
-      String categoryName, List<MenuItem> items, double height) {
+      String categoryName, List<MenuItem> items, double height, IconData icon,
+      {bool addLogo = false}) {
     return SizedBox(
       height: height,
       child: Column(
@@ -275,7 +359,11 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
               style: _menuCategoryStyle, textAlign: TextAlign.center),
           Divider(color: Colors.brown[700]),
           Expanded(
-            child: ListView.builder(
+            child: ListView.separated(
+              separatorBuilder: (_, __) => Divider(
+                color: Colors.brown.withValues(alpha: 0.7),
+                thickness: 0.4,
+              ),
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final isInDailyMenu = locator
@@ -284,13 +372,26 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
                     .any((item) => item.id! == items[index].id);
                 return ListTile(
                   title: Text(
-                      _capitalizeFirstLetter(items[index].name, isInDailyMenu,
-                          items[index].hasBread, items[index].hasPolenta),
-                      style: _itemStyle),
+                    _capitalizeFirstLetter(items[index].name, isInDailyMenu,
+                        items[index].hasBread, items[index].hasPolenta),
+                    style: _itemStyle,
+                  ),
                   trailing:
                       Text("${items[index].price} LEI", style: _priceStyle),
                 );
               },
+            ),
+          ),
+          Visibility(
+            visible: addLogo,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Image.asset(
+                'assets/images/company_logo.png',
+                width: double.infinity,
+                fit: BoxFit.contain,
+                height: 250,
+              ),
             ),
           ),
         ],
@@ -309,8 +410,9 @@ class _DailyMenuOverviewPageState extends State<DailyMenuOverviewPage> {
           Divider(color: Colors.brown[700]),
           Expanded(
             child: ListView.separated(
-              separatorBuilder: (_, __) => SizedBox(
-                height: 10,
+              separatorBuilder: (_, __) => Divider(
+                color: Colors.brown.withValues(alpha: 0.7),
+                thickness: 0.4,
               ),
               itemCount: items.length,
               itemBuilder: (context, index) => Text(

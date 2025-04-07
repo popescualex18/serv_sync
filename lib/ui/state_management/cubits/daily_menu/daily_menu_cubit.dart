@@ -9,7 +9,6 @@ import 'package:serv_sync/ui/state_management/states/daily_menu_state.dart';
 class DailyMenuCubit extends Cubit<DailyMenuState> {
   final AppCubit _cubit;
   final List<MenuItem> menus = [];
-
   Map<int, List<MenuItem>> dailyDefinitions = {
     0: [],
     1: [],
@@ -20,15 +19,6 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
     6: [],
   };
   int categoryIndex = 0;
-  Map<int, String> categories = {
-    0: 'Meniul zilei',
-    1: 'Meniu la alegere',
-    2: 'Ciorbe/Supe',
-    3: 'Garnituri',
-    4: 'Salate',
-    5: 'Pui&Porc',
-    6: 'Diverse'
-  };
 
   final DailyMenuDataAccess _dailyMenuDataAccess = DailyMenuDataAccess();
   final MenuDataAccess _menuDataAccess = MenuDataAccess();
@@ -36,17 +26,11 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
   DailyMenuCubit(this._cubit) : super(DailyMenuState.initial());
 
   Future<void> save() async {
-    await _cubit.guard(
-      Future(
-        () async {
-          var dailyMenu = DailyMenuComponents(
-            menuIds: state.selectedMenuItems.map((item) => item.id!).toList(),
-            menuType: categoryIndex,
-          );
-          await _dailyMenuDataAccess.addDailyMenu(dailyMenu);
-        },
-      ),
+    var dailyMenu = DailyMenuComponents(
+      menuIds: state.selectedMenuItems.map((item) => item.id!).toList(),
+      menuType: categoryIndex,
     );
+    await _dailyMenuDataAccess.addDailyMenu(dailyMenu);
   }
 
   Future fetchData() async {
@@ -63,7 +47,6 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
       },
       Future(
         () async {
-
           var allMenus = await _menuDataAccess.fetchMenus();
           menus.addAll(allMenus);
           var selectedDailyDefinitions =
@@ -84,7 +67,6 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
   void reset() {
     menus.clear();
     emit(DailyMenuState.initial());
-    categoryIndex = 0;
     dailyDefinitions = {
       0: [],
       1: [],
@@ -98,9 +80,26 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
   }
 
   void filterMenus(String text) {
-    var menus = filteredMenus(state.selectedMenuItems);
-    var filter = menus.where((item) => item.name.toLowerCase().contains(text));
-    emit(state.copyWith(menuItems: [...filter]));
+    var menusToSearch =
+        menus.where((item) => item.name.toLowerCase().contains(text)).toList();
+    var menuNotFound = menusToSearch.isEmpty;
+    var result =
+        filteredMenus(state.selectedMenuItems, menusToSearch: menusToSearch);
+    if(result.isEmpty) {
+      emit(
+        state.copyWith(
+          menuItems: [MenuItem.empty().copyWith(name: text)],
+          menuNotFound: menuNotFound,
+        ),
+      );
+      return;
+    }
+    emit(
+      state.copyWith(
+        menuItems: [...result],
+        menuNotFound: menuNotFound,
+      ),
+    );
   }
 
   void clearFilter() {
@@ -108,11 +107,17 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
     emit(state.copyWith(menuItems: [...menus]));
   }
 
-  void changeCategory(int selectedCategoryIndex) {
+  void changeCategory(int selectedCategoryIndex, {String filterText = ''}) {
     dailyDefinitions[categoryIndex] = [...state.selectedMenuItems];
     final selectedCategoryMenuItems = dailyDefinitions[selectedCategoryIndex]!;
     categoryIndex = selectedCategoryIndex;
     var menus = filteredMenus(selectedCategoryMenuItems);
+    if (filterText.isNotEmpty) {
+      menus = menus
+          .where((item) => item.name.toLowerCase().contains(filterText))
+          .toList();
+    }
+
     emit(
       state.copyWith(
         menuItems: [...menus],
@@ -121,11 +126,22 @@ class DailyMenuCubit extends Cubit<DailyMenuState> {
     );
   }
 
-  List<MenuItem> filteredMenus(List<MenuItem> selectedCategoryMenuItems) {
-    var filteredMenus = [...menus];
-    filteredMenus.removeWhere(
-      (item) => selectedCategoryMenuItems.contains(item),
-    );
+  List<MenuItem> filteredMenus(List<MenuItem> selectedCategoryMenuItems,
+      {List<MenuItem>? menusToSearch}) {
+    var filteredMenus = [...menusToSearch ?? menus];
+    for (var item in menus) {
+      if (selectedCategoryMenuItems.contains(item)) {
+        filteredMenus.remove(item);
+        continue;
+      }
+      if (item.categories.isEmpty) {
+        continue;
+      }
+      if (!item.categories.contains(categoryIndex)) {
+        filteredMenus.remove(item);
+      }
+    }
+
     return filteredMenus;
   }
 

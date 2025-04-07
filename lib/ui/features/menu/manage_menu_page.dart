@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:serv_sync/core/constants/constants.dart';
 import 'package:serv_sync/domain/entities/menu/menu_item_model.dart';
 import 'package:serv_sync/ui/features/menu/widgets/custom_checkbox.dart';
 import 'package:serv_sync/ui/shared/widgets/buttons/action_button.dart';
@@ -12,7 +13,12 @@ import 'package:serv_sync/ui/state_management/cubits/menu/manage_menu_cubit.dart
 
 class ManageMenuPage extends StatefulWidget {
   final String? menuId;
-  const ManageMenuPage({super.key, this.menuId});
+  final MenuItem? menuItem;
+  const ManageMenuPage({
+    super.key,
+    this.menuId,
+    this.menuItem,
+  });
 
   @override
   State<ManageMenuPage> createState() => _ManageMenuPageState();
@@ -24,7 +30,7 @@ class _ManageMenuPageState extends State<ManageMenuPage> {
   @override
   void initState() {
     _cubit = context.read<ManageMenuCubit>();
-    _cubit.loadMenu(widget.menuId);
+    _cubit.loadMenu(widget.menuId, widget.menuItem);
     super.initState();
   }
 
@@ -78,7 +84,8 @@ class _ManageMenuPageState extends State<ManageMenuPage> {
                     _buildInputField(
                       label: "Price",
                       hintText: "Enter price",
-                      initialValue: menu.price.toString(),
+                      initialValue:
+                          menu.price > 0 ? menu.price.toString() : null,
                       keyboardType:
                           TextInputType.numberWithOptions(decimal: true),
                       onSave: (String? value) => _cubit.setPrice(
@@ -120,31 +127,68 @@ class _ManageMenuPageState extends State<ManageMenuPage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      "Categorii",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    _buildCategorySelection(menu),
+                    const SizedBox(height: 12),
+                    Visibility(
+                      visible: !_cubit.hasCategorySelected,
+                      child: Text(
+                        "Selecteaza cel putin o categorie.",
+                        style: TextStyle(fontSize: 14, color: Colors.red),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
             ActionButton(
+              icon: Icons.save,
               label: "Save",
               onPressed: () {
-                if (_globalKey.currentState!.validate()) {
+                if (_globalKey.currentState!.validate() ||
+                    _cubit.hasCategorySelected) {
                   _globalKey.currentState!.save();
-                  _cubit.save().then((_) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      snackBarAnimationStyle: AnimationStyle(
-                        duration: Duration(
-                          milliseconds: 30,
-                        ),
-                        reverseDuration: Duration(
-                          milliseconds: 30,
-                        ),
-                      ),
-                      SnackBar(
-                        content: Text("Meniul a fost salvat cu success"),
-                      ),
-                    );
-                  });
+                  _cubit.save().then(
+                    (_) {
+                      if (widget.menuId != null || widget.menuItem != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          snackBarAnimationStyle: AnimationStyle(
+                            duration: Duration(
+                              milliseconds: 30,
+                            ),
+                            reverseDuration: Duration(
+                              milliseconds: 30,
+                            ),
+                          ),
+                          SnackBar(
+                            content: Text("Meniul a fost salvat cu success"),
+                          ),
+                        );
+                        context.pop();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          snackBarAnimationStyle: AnimationStyle(
+                            duration: Duration(
+                              milliseconds: 30,
+                            ),
+                            reverseDuration: Duration(
+                              milliseconds: 30,
+                            ),
+                          ),
+                          SnackBar(
+                            content: Text("Meniul a fost adaugat cu success"),
+                          ),
+                        );
+                        _cubit.resetMenu();
+                      }
+                    },
+                  );
                 }
               },
             ),
@@ -152,6 +196,21 @@ class _ManageMenuPageState extends State<ManageMenuPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildCategorySelection(MenuItem menu) {
+    return Row(
+        spacing: 40,
+        children: Constants.categories.keys.map((category) {
+          var isSelected = menu.categories.contains(category);
+          var categoryName = Constants.categories[category];
+          return CustomCheckbox(
+            label: categoryName!,
+            enabled: isSelected,
+            onChanged: (bool? value) =>
+                _cubit.setCategories(category, value ?? false),
+          );
+        }).toList());
   }
 
   Widget _buildInputField({

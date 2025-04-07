@@ -7,7 +7,7 @@ class SidebarCubit extends Cubit<SidebarState> {
   final routeMap = {
     Routes.menu: 0,
     Routes.dailyMenu: 1,
-    Routes.dailyMenuOverview: 2,
+    Routes.invoiceScreen: 3,
   };
 
   void selectPage(String route) {

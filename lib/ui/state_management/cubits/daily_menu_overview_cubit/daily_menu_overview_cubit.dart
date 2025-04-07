@@ -1,24 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:serv_sync/domain/data_access/daily_menu_data_access.dart';
 import 'package:serv_sync/domain/data_access/menu_data_access.dart';
-import 'package:serv_sync/domain/entities/menu/daily_menu_components.dart';
 import 'package:serv_sync/domain/entities/menu/menu_item_model.dart';
 import 'package:serv_sync/ui/state_management/cubits/app_cubit.dart';
-import 'package:serv_sync/ui/state_management/states/daily_menu_state.dart';
 
 class DailyMenuOverviewCubit extends Cubit<Map<int, List<MenuItem>>> {
   final AppCubit _cubit;
 
   int categoryIndex = 0;
-  Map<int, String> categories = {
-    0: 'Meniul zilei',
-    1: 'Meniu la alegere',
-    2: 'Ciorbe/Supe',
-    3: 'Garnituri',
-    4: 'Salate',
-    5: 'Pui&Porc',
-    6: 'Diverse'
-  };
 
   final DailyMenuDataAccess _dailyMenuDataAccess = DailyMenuDataAccess();
   final MenuDataAccess _menuDataAccess = MenuDataAccess();

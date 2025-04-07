@@ -17,8 +17,21 @@ class SidebarItemModel {
 
 class Data {
   static final List<SidebarItemModel> sidebarItems = [
-    SidebarItemModel(icon: Icons.restaurant_menu, label: 'Menu', route: Routes.menu),
-    SidebarItemModel(icon: Icons.menu_book_sharp, label: 'Meniul zilei', route: Routes.dailyMenu),
-    SidebarItemModel(icon: Icons.menu_book_sharp, label: 'Meniul zilei Overview', route: Routes.dailyMenuOverview, newRoute: true),
+    SidebarItemModel(
+        icon: Icons.restaurant_menu, label: 'Menu', route: Routes.menu),
+    SidebarItemModel(
+        icon: Icons.menu_book_sharp,
+        label: 'Meniul zilei',
+        route: Routes.dailyMenu),
+    SidebarItemModel(
+        icon: Icons.menu_book_sharp,
+        label: 'Meniul zilei Overview',
+        route: Routes.dailyMenuOverview,
+        newRoute: true),
+    // SidebarItemModel(
+    //   icon: Icons.shopping_cart,
+    //   label: 'Meniul zilei Overview',
+    //   route: Routes.invoiceScreen,
+    // ),
   ];
 }

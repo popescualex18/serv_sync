@@ -2,39 +2,39 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Light Theme Colors
-  static final Color _lightPrimaryColor = Color(0xFF007BFF);
-  static final Color _lightSecondaryColor = Color(0xFF17A2B8);
-  static final Color _lightBackgroundColor = Color(0xFFF8F9FA);
-  static final Color _lightCardColor = Colors.white;
-  static final Color _lightTextColor = Color(0xFF212529);
+  static final Color lightSecondaryColor = Color(0xFF17A2B8);
+  static final Color lightBackgroundColor = Color(0xFFFAF8FA);
+  static final Color lightPrimaryColor = Color(0xFFFAF8FA);
+  static final Color lightCardColor = Colors.white;
+  static final Color lightTextColor = Color(0xFF212529);
 
   // Dark Theme Colors
-  static final Color _darkPrimaryColor = Color(0xFF0D6EFD);
-  static final Color _darkSecondaryColor = Color(0xFF20C997);
-  static final Color _darkBackgroundColor = Color(0xFF121212);
-  static final Color _darkCardColor = Color(0xFF1E1E1E);
-  static final Color _darkTextColor = Color(0xFFE0E0E0);
+  static final Color darkPrimaryColor = Color(0xFF0D6EFD);
+  static final Color darkSecondaryColor = Color(0xFF20C997);
+  static final Color darkBackgroundColor = Color(0xFF121212);
+  static final Color darkCardColor = Color(0xFF1E1E1E);
+  static final Color darkTextColor = Color(0xFFE0E0E0);
 
   // Common Button Theme
-  static final ButtonThemeData _buttonTheme = ButtonThemeData(
+  static final ButtonThemeData buttonTheme = ButtonThemeData(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-    buttonColor: _lightPrimaryColor,
+    buttonColor: lightPrimaryColor,
     textTheme: ButtonTextTheme.primary,
   );
 
   // Light Theme
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
-    primaryColor: _lightPrimaryColor,
-    scaffoldBackgroundColor: _lightBackgroundColor,
-    cardColor: _lightCardColor,
+    primaryColor: lightPrimaryColor,
+    scaffoldBackgroundColor: lightBackgroundColor,
+    cardColor: lightCardColor,
     textTheme: TextTheme(
-      bodyLarge: TextStyle(color: _lightTextColor),
-      bodyMedium: TextStyle(color: _lightTextColor),
+      bodyLarge: TextStyle(color: lightTextColor),
+      bodyMedium: TextStyle(color: lightTextColor),
     ),
-    buttonTheme: _buttonTheme,
+    buttonTheme: buttonTheme,
     appBarTheme: AppBarTheme(
-      backgroundColor: _lightPrimaryColor,
+      backgroundColor: lightSecondaryColor,
       titleTextStyle: TextStyle(
         color: Colors.white,
         fontSize: 18,
@@ -46,7 +46,7 @@ class AppTheme {
       labelColor: Colors.white,
       unselectedLabelColor: Colors.black54,
       indicator: BoxDecoration(
-        color: _lightSecondaryColor,
+        color: lightSecondaryColor,
         borderRadius: BorderRadius.circular(20),
       ),
     ),
@@ -55,16 +55,16 @@ class AppTheme {
   // Dark Theme
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
-    primaryColor: _darkPrimaryColor,
-    scaffoldBackgroundColor: _darkBackgroundColor,
-    cardColor: _darkCardColor,
+    primaryColor: darkPrimaryColor,
+    scaffoldBackgroundColor: darkBackgroundColor,
+    cardColor: darkCardColor,
     textTheme: TextTheme(
-      bodyLarge: TextStyle(color: _darkTextColor),
-      bodyMedium: TextStyle(color: _darkTextColor),
+      bodyLarge: TextStyle(color: darkTextColor),
+      bodyMedium: TextStyle(color: darkTextColor),
     ),
-    buttonTheme: _buttonTheme.copyWith(buttonColor: _darkPrimaryColor),
+    buttonTheme: buttonTheme.copyWith(buttonColor: darkPrimaryColor),
     appBarTheme: AppBarTheme(
-      backgroundColor: _darkPrimaryColor,
+      backgroundColor: darkPrimaryColor,
       titleTextStyle: TextStyle(
         color: Colors.white,
         fontSize: 18,
@@ -76,7 +76,7 @@ class AppTheme {
       labelColor: Colors.white,
       unselectedLabelColor: Colors.grey,
       indicator: BoxDecoration(
-        color: _darkSecondaryColor,
+        color: darkSecondaryColor,
         borderRadius: BorderRadius.circular(20),
       ),
     ),

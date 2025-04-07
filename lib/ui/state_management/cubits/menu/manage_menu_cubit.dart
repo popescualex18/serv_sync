@@ -8,13 +8,24 @@ class ManageMenuCubit extends Cubit<MenuItem?> {
 
   final MenuDataAccess _access = MenuDataAccess();
   MenuItem _menu = MenuItem.empty();
+  bool hasCategorySelected =false;
   ManageMenuCubit(this._cubit) : super(null);
 
-  Future loadMenu(String? id) async {
+  void resetMenu(){
+    _menu = MenuItem.empty();
+    emit(_menu);
+  }
+
+  Future loadMenu(String? id, MenuItem? menuItem) async {
     await _cubit.guard(
       onEnd: () =>  emit(_menu),
       Future(
         () async {
+          if(menuItem != null) {
+            _menu = menuItem;
+
+            return;
+          }
           if (id == null) {
             _menu = MenuItem.empty();
 
@@ -22,6 +33,7 @@ class ManageMenuCubit extends Cubit<MenuItem?> {
           }
           var result = await _access.fetchMenuById(id);
           _menu = result;
+          hasCategorySelected = _menu.categories.isNotEmpty;
         },
       ),
     );
@@ -39,7 +51,17 @@ class ManageMenuCubit extends Cubit<MenuItem?> {
     _menu = _menu.copyWith(hasBread: value);
     emit(_menu);
   }
-
+  void setCategories(int category, bool isSelected) {
+    var categories = [..._menu.categories];
+    if(isSelected) {
+      categories.add(category);
+    } else {
+      categories.remove(category);
+    }
+    _menu = _menu.copyWith(categories: categories);
+    hasCategorySelected = _menu.categories.isNotEmpty;
+    emit(_menu);
+  }
   void setHasPolenta(bool value) {
     _menu = _menu.copyWith(hasPolenta: value);
     emit(_menu);

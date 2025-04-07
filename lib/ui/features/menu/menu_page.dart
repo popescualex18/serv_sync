@@ -1,11 +1,11 @@
 import 'package:animated_search_bar/animated_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:serv_sync/domain/entities/menu/menu_item_model.dart';
 import 'package:serv_sync/main.dart';
 import 'package:serv_sync/ui/navigation/app_router.dart';
 import 'package:serv_sync/ui/shared/widgets/base_widget.dart';
+import 'package:serv_sync/ui/shared/widgets/buttons/action_button.dart';
 import 'package:serv_sync/ui/shared/widgets/card/details_card.dart';
 import 'package:serv_sync/ui/state_management/cubits/menu/menu_cubit.dart';
 
@@ -40,20 +40,10 @@ class _MenuPageState extends State<MenuPage> {
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              ElevatedButton.icon(
+              ActionButton(
                 onPressed: () => AppRouter.router.go("/menu/manage"),
-                icon: Icon(Icons.add_rounded, size: 22),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                label: Text(
-                  "Adaugă",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                label: "Adaugă",
+                icon: Icons.add_rounded,
               ),
               SizedBox(width: 16),
               Expanded(
@@ -67,6 +57,7 @@ class _MenuPageState extends State<MenuPage> {
                     filled: true,
                     fillColor: Colors.grey.shade100,
                   ),
+                  autoFocus: true,
                   label: "Caută meniu",
                   onChanged: locator.get<MenuCubit>().filterMenus,
                   onClose: locator.get<MenuCubit>().clearFilter,

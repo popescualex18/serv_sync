@@ -61,8 +61,7 @@ class _MainLayoutState extends State<MainLayout> {
         drawer: kIsWeb ? Sidebar() : null, // Drawer only for Web
         appBar: kIsWeb
             ? AppBar(
-          title: Text("ServSync"),
-          backgroundColor: Colors.blueAccent,
+
           leading: Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.menu),

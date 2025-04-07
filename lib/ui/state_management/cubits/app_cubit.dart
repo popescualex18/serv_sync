@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:serv_sync/core/logging/logger.dart';
 import 'package:serv_sync/ui/state_management/states/app_state.dart';
 
 class AppCubit extends Cubit<AppState> {
@@ -12,6 +13,7 @@ class AppCubit extends Cubit<AppState> {
       );
       await func;
     }  catch (e) {
+      print(e);
       error = e as Exception;
     } finally {
       onEnd?.call();

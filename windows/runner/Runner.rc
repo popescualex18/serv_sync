@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "bitex.serv_sync" "\0"
-            VALUE "FileDescription", "serv_sync" "\0"
+            VALUE "FileDescription", "La Neagtovo" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "serv_sync" "\0"
+            VALUE "InternalName", "La Neagtovo" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 bitex.serv_sync. All rights reserved." "\0"
-            VALUE "OriginalFilename", "serv_sync.exe" "\0"
-            VALUE "ProductName", "serv_sync" "\0"
+            VALUE "OriginalFilename", "La Neagtovo.exe" "\0"
+            VALUE "ProductName", "La Neagtovo" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

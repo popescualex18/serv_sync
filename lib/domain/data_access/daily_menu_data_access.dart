@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:serv_sync/core/network/client/dio_client.dart';
 import 'package:serv_sync/domain/entities/menu/daily_menu_components.dart';
-import 'package:serv_sync/domain/entities/menu/daily_menu_item.dart';
 
 class DailyMenuDataAccess {
   final CollectionReference dailyMenuCollection =
@@ -28,11 +26,9 @@ class DailyMenuDataAccess {
       // Step 2: Document found, update the menuIds field
       await querySnapshot.docs.first.reference
           .update({'menuIds': dailyMenu.menuIds});
-      print("menuIds Updated Successfully");
     } else {
       // Step 3: Document not found, create a new one
       await dailyMenuCollection.add(dailyMenu.toJson());
-      print("New Document Created Successfully");
     }
   }
 }

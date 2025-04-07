@@ -13,18 +13,18 @@ class CustomCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: <Widget>[
-        const SizedBox(width: 10),
-        Text(
-          label,
-          style: TextStyle(fontSize: 17.0),
-        ),
         const SizedBox(width: 10),
         Checkbox(
           tristate: true,
           value: enabled,
           onChanged: onChanged,
+        ),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: TextStyle(fontSize: 17.0),
         ),
       ],
     );

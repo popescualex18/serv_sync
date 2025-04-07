@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:serv_sync/domain/entities/menu/menu_item_model.dart';
-import 'package:serv_sync/main.dart';
 import 'package:serv_sync/ui/navigation/app_router.dart';
-import 'package:serv_sync/ui/state_management/cubits/menu/menu_cubit.dart';
 
 class DetailsCard extends StatelessWidget {
   final MenuItem item;
   final Widget actionButton;
-  final void Function() onEditClosed;
+  final void Function()? onEditClosed;
   const DetailsCard({
     super.key,
     required this.item,
     required this.actionButton,
-    required this.onEditClosed,
+    this.onEditClosed,
   });
 
   @override
@@ -22,13 +20,15 @@ class DetailsCard extends StatelessWidget {
           borderRadius:
               BorderRadius.circular(12)), // Slightly reduced border radius
       elevation: 1.5, // Lower shadow for a compact look
-      shadowColor: Colors.grey.withOpacity(0.15),
+      shadowColor: Colors.grey.withValues(alpha:0.15),
       margin: EdgeInsets.symmetric(vertical: 4), // Reduced vertical spacing
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () async{
-          await AppRouter.router.push("/menu/manage/${item.id}");
-          onEditClosed();
+          if(onEditClosed != null) {
+            await AppRouter.router.push("/menu/manage/${item.id}");
+            onEditClosed!();
+          }
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -40,7 +40,7 @@ class DetailsCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(6), // Reduced padding
                 decoration: BoxDecoration(
-                  color: Colors.orangeAccent.withOpacity(0.15),
+                  color: Colors.orangeAccent.withValues(alpha:0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(Icons.fastfood_rounded,
@@ -96,7 +96,7 @@ class DetailsCard extends StatelessWidget {
         ? Container(
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.blueAccent.withOpacity(0.2),
+              color: Colors.blueAccent.withValues(alpha:0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
